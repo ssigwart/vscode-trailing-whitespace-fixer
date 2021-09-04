@@ -2,7 +2,7 @@
   "name": "trailing-whitespace-fixer",
 	"displayName": "Trailing Whitespace Fixer",
 	"description": "Automatically removes trailing whitespace when you hit Enter. Also highlights trailing whitespace.",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"publisher": "ssigwart",
 	"repository": {
 		"type": "git",
@@ -26,6 +26,17 @@
 	],
 	"main": "./dist/extension.js",
 	"contributes": {
+		"configuration": {
+			"title": "Trailing Whitespace Fixer",
+			"properties": {
+				"trailing-whitespace-fixer.allowWhitespaceOnlyLines": {
+					"type": "boolean",
+					"scope": "resource",
+					"default": false,
+					"description": "If enabled, whitespace only lines will not be trimmed or highlighted."
+				}
+			}
+		}
 	},
 	"icon": "images/icon.png",
 	"scripts": {

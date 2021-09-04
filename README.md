@@ -29,3 +29,6 @@ It includes the following features:
 
 ### Show Trailing Whitespace
 - Any trailing whitespace on lines other than the current line will be highlighted in red.
+
+## Configuration
+- If you want to allow lines that are only whitespace, you can enable the `trailing-whitespace-fixer.allowWhitespaceOnlyLines` setting. This is useful if you want to retain the current indentation level.

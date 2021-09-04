@@ -1,5 +1,19 @@
 import * as vscode from 'vscode';
 
+// Settings
+let allowWsOnlyLines = false;
+
+/**
+ * Update settings from config
+ *
+ * @param {vscode.TextDocument} doc Document
+ */
+function updateSettingsFromConfig(doc: vscode.TextDocument): void
+{
+	const config = vscode.workspace.getConfiguration("trailing-whitespace-fixer", doc.uri);
+	const allowWsOnlyLinesSetting = config.get("allowWhitespaceOnlyLines");
+	allowWsOnlyLines = !!allowWsOnlyLinesSetting;
+}
 
 /**
  * Activate
@@ -9,6 +23,7 @@ export function activate(context: vscode.ExtensionContext)
 	// Trim on Enter
 	context.subscriptions.push(vscode.workspace.onDidChangeTextDocument((e: vscode.TextDocumentChangeEvent) => {
 		const doc = e.document;
+		updateSettingsFromConfig(doc);
 		const editor = vscode.window.activeTextEditor;
 		if (editor && editor.document.uri === doc.uri) // Make sure editor didn't change
 		{
@@ -23,7 +38,11 @@ export function activate(context: vscode.ExtensionContext)
 					let lineText = doc.getText(new vscode.Range(endPos.line, 0, endPos.line, endPos.character));
 					const match = /\s+$/.exec(lineText);
 					if (match !== null)
-						deletedRanges.push(new vscode.Range(endPos.line, endPos.character - match[0].length, endPos.line, endPos.character));
+					{
+						const startChar = endPos.character - match[0].length;
+						if (!allowWsOnlyLines || startChar !== 0)
+							deletedRanges.push(new vscode.Range(endPos.line, startChar, endPos.line, endPos.character));
+					}
 
 					// Check if there was whitespace after where Enter was pressed
 					let offset = doc.offsetAt(endPos) + change.text.length;
@@ -54,19 +73,21 @@ export function activate(context: vscode.ExtensionContext)
 	context.subscriptions.push(decorationType);
 	// Set up function to do highlighting
 	const highlightWhitespace = (editor: vscode.TextEditor, doc: vscode.TextDocument): void => {
+		updateSettingsFromConfig(doc);
 		let trailingWhitespaceRanges: vscode.Range[] = [];
 		let activeLines: number[] = [];
 		for (const selection of editor.selections)
 			activeLines.push(selection.end.line);
+		const maxLineIdx = doc.lineCount - 1;
 		for (const visibleRange of editor.visibleRanges)
 		{
 			for (let line = visibleRange.start.line; line <= visibleRange.end.line; line++)
 			{
-				// Check that it's not the current line
-				if (activeLines.indexOf(line) !== -1)
+				// Check that it's not the current line or the last line
+				if (activeLines.indexOf(line) !== -1 || line === maxLineIdx)
 					continue;
 
-					const offset = doc.offsetAt(new vscode.Position(line + 1, 0)) - 1;
+				const offset = doc.offsetAt(new vscode.Position(line + 1, 0)) - 1;
 				const eolPos = doc.positionAt(offset);
 				let startPos = new vscode.Position(eolPos.line, Math.max(0, eolPos.character - 10));
 				const endOfLineText = doc.getText(new vscode.Range(startPos, eolPos));
@@ -91,7 +112,8 @@ export function activate(context: vscode.ExtensionContext)
 						}
 					}
 					startPos = new vscode.Position(eolPos.line, eolPos.character - whitespaceLen);
-					trailingWhitespaceRanges.push(new vscode.Range(startPos, eolPos));
+					if (!allowWsOnlyLines || startPos.character !== 0)
+						trailingWhitespaceRanges.push(new vscode.Range(startPos, eolPos));
 				}
 			}
 		}
