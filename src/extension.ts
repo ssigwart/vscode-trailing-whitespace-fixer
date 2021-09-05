@@ -29,7 +29,13 @@ export function activate(context: vscode.ExtensionContext)
 		{
 			// Check content changes to see if they added newlines
 			let deletedRanges: vscode.Range[] = [];
-			for (const change of e.contentChanges)
+			let prevChangeLengths = 0;
+			// Sort ranges
+			let contentChanges = e.contentChanges.slice();
+			contentChanges.sort((a: vscode.TextDocumentContentChangeEvent, b: vscode.TextDocumentContentChangeEvent): number => {
+				return a.rangeOffset - b.rangeOffset;
+			});
+			for (const change of contentChanges)
 			{
 				if (change.text.startsWith("\n"))
 				{
@@ -45,7 +51,8 @@ export function activate(context: vscode.ExtensionContext)
 					}
 
 					// Check if there was whitespace after where Enter was pressed
-					let offset = doc.offsetAt(endPos) + change.text.length;
+					let offset = change.rangeOffset + change.text.length + prevChangeLengths;
+					prevChangeLengths += change.text.length - change.rangeLength;
 					let afterCursorPos = doc.positionAt(offset);
 					let afterCursorText = doc.getText(new vscode.Range(afterCursorPos.line, afterCursorPos.character, afterCursorPos.line + 1, 0));
 					const afterMatch = /^\s+/.exec(afterCursorText);
