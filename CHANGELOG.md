@@ -7,3 +7,7 @@
 
 ## 1.0.2
 - Fixed multi-cursor support.
+
+## 1.0.3
+- Added support for `\r\n` newlines.
+- Fixes redo stack being broken after first redo that triggers an edit.
