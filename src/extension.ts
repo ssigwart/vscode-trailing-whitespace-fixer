@@ -37,7 +37,7 @@ export function activate(context: vscode.ExtensionContext)
 			});
 			for (const change of contentChanges)
 			{
-				if (change.text.startsWith("\n"))
+				if (change.text.startsWith("\n") || change.text.startsWith("\r"))
 				{
 					// Get whitespace at end of line
 					const endPos = change.range.start;
