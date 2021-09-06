@@ -21,7 +21,11 @@ function updateSettingsFromConfig(doc: vscode.TextDocument): void
 export function activate(context: vscode.ExtensionContext)
 {
 	// Trim on Enter
-	context.subscriptions.push(vscode.workspace.onDidChangeTextDocument((e: vscode.TextDocumentChangeEvent) => {
+	context.subscriptions.push(vscode.workspace.onDidChangeTextDocument((e: vscode.TextDocumentChangeEvent): void => {
+		// Don't want to break redo stack, so don't do anything for those
+		if (e.reason === vscode.TextDocumentChangeReason.Undo || e.reason === vscode.TextDocumentChangeReason.Redo)
+			return;
+
 		const doc = e.document;
 		updateSettingsFromConfig(doc);
 		const editor = vscode.window.activeTextEditor;
