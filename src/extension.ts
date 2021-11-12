@@ -56,13 +56,13 @@ export function activate(context: vscode.ExtensionContext)
 
 					// Check if there was whitespace after where Enter was pressed
 					let offset = change.rangeOffset + change.text.length + prevChangeLengths;
-					prevChangeLengths += change.text.length - change.rangeLength;
 					let afterCursorPos = doc.positionAt(offset);
 					let afterCursorText = doc.getText(new vscode.Range(afterCursorPos.line, afterCursorPos.character, afterCursorPos.line + 1, 0));
 					const afterMatch = /^\s+/.exec(afterCursorText);
 					if (afterMatch !== null)
 						deletedRanges.push(new vscode.Range(afterCursorPos.line, afterCursorPos.character, afterCursorPos.line, afterCursorPos.character + afterMatch[0].length));
 				}
+				prevChangeLengths += change.text.length - change.rangeLength;
 			}
 
 			// Do deletes

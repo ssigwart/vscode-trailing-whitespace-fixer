@@ -11,3 +11,12 @@
 ## 1.0.3
 - Added support for `\r\n` newlines.
 - Fixes redo stack being broken after first redo that triggers an edit.
+
+## 1.0.4
+- Fixed issue where Move Line Up command on the line 2 below resulted in the space after "c" being removed.
+
+```
+b
+a
+c #
+```
