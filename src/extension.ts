@@ -45,13 +45,13 @@ export function activate(context: vscode.ExtensionContext)
 				{
 					// Get whitespace at end of line
 					const endPos = change.range.start;
-					let lineText = doc.getText(new vscode.Range(endPos.line, 0, endPos.line, endPos.character));
+					let lineText = doc.getText(new vscode.Range(endPos.line, 0, endPos.line, endPos.character + 1));
 					const match = /\s+$/.exec(lineText);
 					if (match !== null)
 					{
 						const startChar = endPos.character - match[0].length;
 						if (!allowWsOnlyLines || startChar !== 0)
-							deletedRanges.push(new vscode.Range(endPos.line, startChar, endPos.line, endPos.character));
+							deletedRanges.push(new vscode.Range(endPos.line, startChar, endPos.line, endPos.character + 1));
 					}
 
 					// Check if there was whitespace after where Enter was pressed

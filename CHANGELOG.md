@@ -20,3 +20,11 @@ b
 a
 c #
 ```
+
+## 1.0.5
+- Fixed issue where Move Line Up command on the line 2 below resulted in the space between "a" and "c" being removed.
+
+```
+a c
+ab
+```
