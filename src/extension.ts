@@ -62,6 +62,13 @@ export function activate(context: vscode.ExtensionContext)
 					if (afterMatch !== null)
 						deletedRanges.push(new vscode.Range(afterCursorPos.line, afterCursorPos.character, afterCursorPos.line, afterCursorPos.character + afterMatch[0].length));
 				}
+				// Check for all whitespace line that is part of a shifted line
+				else if (change.range.start.character === 0 && contentChanges.length > 1)
+				{
+					const match = /^(\s+)\r?\n/.exec(change.text);
+					if (match !== null)
+						deletedRanges.push(new vscode.Range(change.range.start.line, change.range.start.character, change.range.start.line, change.range.start.character + match[1].length));
+				}
 				prevChangeLengths += change.text.length - change.rangeLength;
 			}
 

@@ -28,3 +28,14 @@ c #
 a c
 ab
 ```
+
+## 1.0.6
+- Updated Move Line Down command on the line 2 to remove whitespace on the moved up line.
+
+```json
+[
+	88,
+
+	99
+]
+```
