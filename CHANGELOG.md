@@ -39,3 +39,10 @@ ab
 	99
 ]
 ```
+
+## 1.0.7
+- Fixed Move Line Up command on the line 2 that would cause `a ` to be removed.
+```
+a 1
+b
+```

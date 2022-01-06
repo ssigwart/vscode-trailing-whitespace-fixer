@@ -2,7 +2,7 @@
   "name": "trailing-whitespace-fixer",
 	"displayName": "Trailing Whitespace Fixer",
 	"description": "Automatically removes trailing whitespace when you hit Enter. Also highlights trailing whitespace.",
-	"version": "1.0.6",
+	"version": "1.0.7",
 	"publisher": "ssigwart",
 	"repository": {
 		"type": "git",
@@ -44,7 +44,11 @@
 		"compile": "webpack",
 		"watch": "webpack --watch",
 		"package": "webpack --mode production --devtool hidden-source-map",
-		"lint": "eslint src --ext ts"
+		"test-compile": "tsc -p ./",
+		"test-watch": "tsc -watch -p ./",
+		"pretest": "yarn run test-compile && yarn run lint",
+		"lint": "eslint src --ext ts",
+		"test": "node ./out/test/runTest.js"
 	},
 	"devDependencies": {
 		"@types/vscode": "^1.60.0",

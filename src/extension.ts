@@ -36,6 +36,15 @@ export function activate(context: vscode.ExtensionContext)
 			let prevChangeLengths = 0;
 			// Sort ranges
 			let contentChanges = e.contentChanges.slice();
+			let likelyMoveLineUpOrDown = false;
+			for (let i = 1; i < contentChanges.length; i++)
+			{
+				if (contentChanges[i - 1].rangeOffset > contentChanges[i].rangeOffset)
+				{
+					likelyMoveLineUpOrDown = true;
+					break;
+				}
+			}
 			contentChanges.sort((a: vscode.TextDocumentContentChangeEvent, b: vscode.TextDocumentContentChangeEvent): number => {
 				return a.rangeOffset - b.rangeOffset;
 			});
@@ -44,23 +53,31 @@ export function activate(context: vscode.ExtensionContext)
 				if (change.text.startsWith("\n") || change.text.startsWith("\r"))
 				{
 					// Get whitespace at end of line
-					const endPos = change.range.start;
-					let lineText = doc.getText(new vscode.Range(endPos.line, 0, endPos.line, endPos.character + 1));
+					const adjustedEndOffset = change.rangeOffset + prevChangeLengths;
+					const adjustedEndOffset2 = change.rangeOffset + change.rangeLength + prevChangeLengths;
+					let endPos = doc.positionAt(adjustedEndOffset);
+					let endPos2 = doc.positionAt(adjustedEndOffset2);
+					let adjustedEndLine = endPos.line;
+					let lineText = doc.getText(new vscode.Range(adjustedEndLine, 0, endPos2.line, endPos2.character));
 					const match = /\s+$/.exec(lineText);
 					if (match !== null)
 					{
 						const startChar = endPos.character - match[0].length;
 						if (!allowWsOnlyLines || startChar !== 0)
-							deletedRanges.push(new vscode.Range(endPos.line, startChar, endPos.line, endPos.character + 1));
+							deletedRanges.push(new vscode.Range(adjustedEndLine, startChar, endPos2.line, endPos2.character));
 					}
 
 					// Check if there was whitespace after where Enter was pressed
-					let offset = change.rangeOffset + change.text.length + prevChangeLengths;
-					let afterCursorPos = doc.positionAt(offset);
-					let afterCursorText = doc.getText(new vscode.Range(afterCursorPos.line, afterCursorPos.character, afterCursorPos.line + 1, 0));
-					const afterMatch = /^\s+/.exec(afterCursorText);
-					if (afterMatch !== null)
-						deletedRanges.push(new vscode.Range(afterCursorPos.line, afterCursorPos.character, afterCursorPos.line, afterCursorPos.character + afterMatch[0].length));
+					if (!likelyMoveLineUpOrDown)
+					{
+						let offset = change.rangeOffset + change.text.length + prevChangeLengths;
+						let afterCursorPos = doc.positionAt(offset);
+						let afterCursorText = doc.getText(new vscode.Range(afterCursorPos.line, afterCursorPos.character, afterCursorPos.line + 1, 0));
+						afterCursorText = afterCursorText.substring(0, afterCursorText.length - 1); // Remove \n
+						const afterMatch = /^\s+/.exec(afterCursorText);
+						if (afterMatch !== null)
+							deletedRanges.push(new vscode.Range(afterCursorPos.line, afterCursorPos.character, afterCursorPos.line, afterCursorPos.character + afterMatch[0].length));
+					}
 				}
 				// Check for all whitespace line that is part of a shifted line
 				else if (change.range.start.character === 0 && contentChanges.length > 1)
