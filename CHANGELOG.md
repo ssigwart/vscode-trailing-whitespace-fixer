@@ -46,3 +46,13 @@ ab
 a 1
 b
 ```
+
+## 1.0.8
+- Fix multi-cursor support for hitting Enter where the cursor is displays below.
+```
+1| 2| 3 4
+```
+```
+	|	1	|	2
+```
+- Added check that only whitespace is deleted.

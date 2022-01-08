@@ -45,6 +45,48 @@ async function testWhitespace(initialText: string, expectedText: string, pos: vs
 	});
 }
 
+async function testWhitespaceMultiCursor(initialText: string, expectedText: string, positions: vscode.Position[], command: string | null, expectedNumChanges: number): Promise<void>
+{
+	await vscode.workspace.openTextDocument({
+		language: "plaintext",
+		content: initialText
+	}).then(async (doc: vscode.TextDocument) => {
+		let finalDocText = "";
+		let changedPromise = new Promise((resolve: (value: any) => any) => {
+			uriChangeResolvers.set(doc.uri, function() {
+				expectedNumChanges--;
+				if (expectedNumChanges === 0)
+					resolve(true);
+			});
+		});
+		let closePromise = new Promise((resolve: (value: any) => any) => {
+			docClosedResolvers.set(doc.uri, function(docText: string) {
+				finalDocText = docText;
+				resolve(true);
+			});
+		});
+		return vscode.window.showTextDocument(doc).then((editor: vscode.TextEditor) => {
+			editor.options.tabSize = 2;
+			editor.selections = positions.map((pos: vscode.Position) => new vscode.Selection(pos, pos));
+			if (command !== null)
+				return vscode.commands.executeCommand(command);
+			return editor.edit((editBuilder: vscode.TextEditorEdit) => {
+				for (const pos of positions)
+					editBuilder.insert(pos, "\n");
+			});
+		}).then(() => {
+			return changedPromise;
+		}).then(() => {
+			assert.strictEqual(doc.getText(), expectedText);
+			return vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+		}).then(() => {
+			return closePromise;
+		}).then(() => {
+			assert.strictEqual(finalDocText, expectedText);
+		});
+	});
+}
+
 suite('Extension Test Suite', () => {
 	const disposable = vscode.workspace.onDidChangeTextDocument((e: vscode.TextDocumentChangeEvent): void => {
 		const func = uriChangeResolvers.get(e.document.uri);
@@ -147,6 +189,45 @@ suite('Extension Test Suite', () => {
 			"a 1"
 		].join("\n");
 		await testWhitespace(initialText, expectedText, new vscode.Position(1, 1), "editor.action.moveLinesUpAction", 1);
+	});
+
+	test('Test v 1.0.8 fix a', async function () {
+		this.timeout(3000);
+		const initialText = [
+			"1 2 3 4"
+		].join("\n");
+		const expectedText = [
+			"1",
+			"2",
+			"3 4",
+		].join("\n");
+		await testWhitespaceMultiCursor(initialText, expectedText, [new vscode.Position(0, 1), new vscode.Position(0, 3)], null, 2);
+	});
+
+	test('Test v 1.0.8 fix b', async function () {
+		this.timeout(3000);
+		const initialText = [
+			"\t\t1\t\t2"
+		].join("\n");
+		const expectedText = [
+			"",
+			"1",
+			"2"
+		].join("\n");
+		await testWhitespaceMultiCursor(initialText, expectedText, [new vscode.Position(0, 1), new vscode.Position(0, 4)], null, 2);
+	});
+
+	test('Test v 1.0.8 fix b 2', async function () {
+		this.timeout(3000);
+		const initialText = [
+			"\t  \t1\t  \t2"
+		].join("\n");
+		const expectedText = [
+			"",
+			"1",
+			"2"
+		].join("\n");
+		await testWhitespaceMultiCursor(initialText, expectedText, [new vscode.Position(0, 2), new vscode.Position(0, 6)], null, 2);
 	});
 
 	// Close editors

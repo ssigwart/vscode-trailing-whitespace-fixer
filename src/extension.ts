@@ -39,10 +39,19 @@ export function activate(context: vscode.ExtensionContext)
 			let likelyMoveLineUpOrDown = false;
 			for (let i = 1; i < contentChanges.length; i++)
 			{
-				if (contentChanges[i - 1].rangeOffset > contentChanges[i].rangeOffset)
+				const prevChange = contentChanges[i - 1];
+				const currentChange = contentChanges[i];
+				if (prevChange.rangeOffset > currentChange.rangeOffset)
 				{
-					likelyMoveLineUpOrDown = true;
-					break;
+					// Was anything deleted?
+					if (
+						prevChange.rangeLength > prevChange.text.length ||
+						currentChange.rangeLength > currentChange.text.length
+					)
+					{
+						likelyMoveLineUpOrDown = true;
+						break;
+					}
 				}
 			}
 			contentChanges.sort((a: vscode.TextDocumentContentChangeEvent, b: vscode.TextDocumentContentChangeEvent): number => {
@@ -57,6 +66,12 @@ export function activate(context: vscode.ExtensionContext)
 					const adjustedEndOffset2 = change.rangeOffset + change.rangeLength + prevChangeLengths;
 					let endPos = doc.positionAt(adjustedEndOffset);
 					let endPos2 = doc.positionAt(adjustedEndOffset2);
+					// Make sure we're only dealing with 1 line
+					if (endPos2.line > endPos.line)
+					{
+						const newOffset = doc.offsetAt(new vscode.Position(endPos.line + 1, 0)) - 1;
+						endPos2 = doc.positionAt(newOffset);
+					}
 					let adjustedEndLine = endPos.line;
 					let lineText = doc.getText(new vscode.Range(adjustedEndLine, 0, endPos2.line, endPos2.character));
 					const match = /\s+$/.exec(lineText);
@@ -92,6 +107,19 @@ export function activate(context: vscode.ExtensionContext)
 			// Do deletes
 			if (deletedRanges.length > 0)
 			{
+				// Check that deleted ranges are only whitespace
+				for (const deletedRange of deletedRanges)
+				{
+					const removedText = doc.getText(deletedRange);
+					if (!/^[\s\r\n]*$/.test(removedText))
+					{
+						const msg = "There was an error removing trailing whitespace.";
+						vscode.window.showErrorMessage(msg);
+						return;
+					}
+				}
+
+				// Add change
 				editor.edit((editBuilder: vscode.TextEditorEdit): void => {
 					for (const deletedRange of deletedRanges)
 						editBuilder.delete(deletedRange);
