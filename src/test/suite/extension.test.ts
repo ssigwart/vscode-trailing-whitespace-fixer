@@ -230,6 +230,18 @@ suite('Extension Test Suite', () => {
 		await testWhitespaceMultiCursor(initialText, expectedText, [new vscode.Position(0, 2), new vscode.Position(0, 6)], null, 2);
 	});
 
+	test('Test v 1.0.9 fix', async function () {
+		this.timeout(3000);
+		const initialText = [
+			"/** */"
+		].join("\n");
+		const expectedText = [
+			"/**",
+			" */"
+		].join("\n");
+		await testWhitespace(initialText, expectedText, new vscode.Position(0, 3), null, 1);
+	});
+
 	// Close editors
 	vscode.commands.executeCommand('workbench.action.closeAllEditors');
 });

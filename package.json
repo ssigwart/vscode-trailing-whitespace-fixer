@@ -2,7 +2,7 @@
   "name": "trailing-whitespace-fixer",
 	"displayName": "Trailing Whitespace Fixer",
 	"description": "Automatically removes trailing whitespace when you hit Enter. Also highlights trailing whitespace.",
-	"version": "1.0.8",
+	"version": "1.0.9",
 	"publisher": "ssigwart",
 	"repository": {
 		"type": "git",

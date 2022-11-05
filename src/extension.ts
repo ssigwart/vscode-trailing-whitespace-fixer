@@ -91,7 +91,11 @@ export function activate(context: vscode.ExtensionContext)
 						afterCursorText = afterCursorText.substring(0, afterCursorText.length - 1); // Remove \n
 						const afterMatch = /^\s+/.exec(afterCursorText);
 						if (afterMatch !== null)
-							deletedRanges.push(new vscode.Range(afterCursorPos.line, afterCursorPos.character, afterCursorPos.line, afterCursorPos.character + afterMatch[0].length));
+						{
+							// Ignore if it looks like the end of a PHPDoc or similar comment
+							if (/^\s* \*/.exec(afterCursorText) === null)
+								deletedRanges.push(new vscode.Range(afterCursorPos.line, afterCursorPos.character, afterCursorPos.line, afterCursorPos.character + afterMatch[0].length));
+						}
 					}
 				}
 				// Check for all whitespace line that is part of a shifted line

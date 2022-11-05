@@ -56,3 +56,9 @@ b
 	|	1	|	2
 ```
 - Added check that only whitespace is deleted.
+
+## 1.0.9
+- Fix closing PHPDoc comment when hitting Enter where the cursor is displays below.
+```
+/**| */
+```
