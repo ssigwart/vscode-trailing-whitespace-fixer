@@ -62,3 +62,6 @@ b
 ```
 /**| */
 ```
+
+## 1.0.10
+- Fix removed whitespace after file changes on disk (e.g. via git operations).

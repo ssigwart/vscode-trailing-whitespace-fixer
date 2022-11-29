@@ -92,8 +92,12 @@ export function activate(context: vscode.ExtensionContext)
 						const afterMatch = /^\s+/.exec(afterCursorText);
 						if (afterMatch !== null)
 						{
-							// Ignore if it looks like the end of a PHPDoc or similar comment
-							if (/^\s* \*/.exec(afterCursorText) === null)
+							if (
+								// Ignore if it looks like the end of a PHPDoc or similar comment
+								/^\s* \*/.exec(afterCursorText) === null &&
+								// Ignore if it looks like the next line is a brace
+								/^\s[\[\]{}()]/.exec(afterCursorText) === null
+							)
 								deletedRanges.push(new vscode.Range(afterCursorPos.line, afterCursorPos.character, afterCursorPos.line, afterCursorPos.character + afterMatch[0].length));
 						}
 					}

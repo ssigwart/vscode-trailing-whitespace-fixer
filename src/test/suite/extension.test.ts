@@ -4,7 +4,7 @@ import * as vscode from "vscode";
 let uriChangeResolvers: Map<vscode.Uri, () => any> = new Map();
 let docClosedResolvers: Map<vscode.Uri, (docText: string) => any> = new Map();
 
-async function testWhitespace(initialText: string, expectedText: string, pos: vscode.Position, command: string | null, expectedNumChanges: number): Promise<void>
+async function testWhitespace(initialText: string, expectedText: string, pos: vscode.Position, command: string | null, expectedNumChanges: number, insertedText: string = "\n"): Promise<void>
 {
 	await vscode.workspace.openTextDocument({
 		language: "plaintext",
@@ -30,7 +30,7 @@ async function testWhitespace(initialText: string, expectedText: string, pos: vs
 			if (command !== null)
 				return vscode.commands.executeCommand(command);
 			return editor.edit((editBuilder: vscode.TextEditorEdit) => {
-				editBuilder.insert(pos, "\n");
+				editBuilder.insert(pos, insertedText);
 			});
 		}).then(() => {
 			return changedPromise;
@@ -240,6 +240,29 @@ suite('Extension Test Suite', () => {
 			" */"
 		].join("\n");
 		await testWhitespace(initialText, expectedText, new vscode.Position(0, 3), null, 1);
+	});
+
+	test('Test v 1.0.10 fix', async function () {
+		this.timeout(3000);
+		const initialText = [
+			"if (1)",
+			"{",
+			"	if (2)",
+			"	{",
+			"	}",
+			"}"
+		].join("\n");
+		const expectedText = [
+			"if (1)",
+			"{",
+			"	if (2)",
+			"	{",
+			"",
+			"		// Test",
+			"	}",
+			"}"
+		].join("\n");
+		await testWhitespace(initialText, expectedText, new vscode.Position(4, 0), null, 1, "\n\t\t// Test\n");
 	});
 
 	// Close editors
