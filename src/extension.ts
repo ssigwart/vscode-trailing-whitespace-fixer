@@ -20,8 +20,18 @@ function updateSettingsFromConfig(doc: vscode.TextDocument): void
  */
 export function activate(context: vscode.ExtensionContext)
 {
+	// Check when an editor looses focus
+	let editorFocused: boolean = true;
+	context.subscriptions.push(vscode.window.onDidChangeWindowState((e: vscode.WindowState): void => {
+		editorFocused = e.focused;
+	}));
+
 	// Trim on Enter
 	context.subscriptions.push(vscode.workspace.onDidChangeTextDocument((e: vscode.TextDocumentChangeEvent): void => {
+		// Don't make changes if the user isn't focused on the window. It's likely an external change (e.g. git)
+		if (!editorFocused)
+			return;
+
 		// Don't want to break redo stack, so don't do anything for those
 		if (e.reason === vscode.TextDocumentChangeReason.Undo || e.reason === vscode.TextDocumentChangeReason.Redo)
 			return;

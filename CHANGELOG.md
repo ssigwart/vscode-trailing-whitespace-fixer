@@ -65,3 +65,6 @@ b
 
 ## 1.0.10
 - Fix removed whitespace after file changes on disk (e.g. via git operations).
+
+## 1.0.11
+- Don't make changes if not focused on the window. The main intent is to not make changes when file is changed on disk (e.g. via git branch changes or stashing).
