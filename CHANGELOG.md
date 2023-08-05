@@ -71,3 +71,6 @@ b
 
 ## 1.0.12
 - Allow as web extension.
+
+## 1.0.13
+- Allow setting `trailingWhitespaceFixer.trailingWhitespaceColor` in `workbench.colorCustomizations` to change the background color of trailing whitespace.

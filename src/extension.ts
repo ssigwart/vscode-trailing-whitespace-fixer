@@ -149,7 +149,7 @@ export function activate(context: vscode.ExtensionContext)
 
 	///// Highlighting /////
 	const decorationType = vscode.window.createTextEditorDecorationType({
-		backgroundColor: "#c20000"
+		backgroundColor: new vscode.ThemeColor("trailingWhitespaceFixer.trailingWhitespaceColor")
 	});
 	context.subscriptions.push(decorationType);
 	// Set up function to do highlighting
